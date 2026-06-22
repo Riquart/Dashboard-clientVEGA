@@ -125,7 +125,7 @@ function boot(DATA){
     document.getElementById('kpis').innerHTML=[
       kc('PS abonnés',fmt(w.ps[n]),chg(w.ps),true),
       kc('Licences abonnées',fmt(w.lic[n]),chg(w.lic),false),
-      kc('Ratio licences / PS',w.ps[n]?(w.lic[n]/w.ps[n]).toFixed(2).replace('.',','):' —',null,false),
+      kc('PS par licence',w.lic[n]?(w.ps[n]/w.lic[n]).toFixed(2).replace('.',','):' —',null,false),
       kc('Professions suivies','5',null,false),
     ].join('');
     const setx=c=>{c.options.scales.x.ticks=xticks(w.labels);};
