@@ -65,7 +65,7 @@ footer a{color:var(--primary2)}
 </div>
 <script>
 const PROFS=['Total','Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
-const PERIODS=[['3 mois',92],['6 mois',184],['12 mois',366],['Tout',null]];
+const PERIODS=[['3 mois',92],['6 mois',184],['12 mois',366],['2 ans',730],['3 ans',1095],['5 ans',1825],['Tout',null]];
 
 function frDate(iso){const[y,m,d]=iso.split('-');const mn=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];return +d+' '+mn[+m-1]+' '+y;}
 function frShort(iso){const[y,m]=iso.split('-');const mn=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];return mn[+m-1]+" '"+y.slice(2);}
