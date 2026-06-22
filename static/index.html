@@ -126,7 +126,6 @@ function boot(DATA){
       kc('PS abonnés',fmt(w.ps[n]),chg(w.ps),true),
       kc('Licences abonnées',fmt(w.lic[n]),chg(w.lic),false),
       kc('PS par licence',w.lic[n]?(w.ps[n]/w.lic[n]).toFixed(2).replace('.',','):' —',null,false),
-      kc('Professions suivies','5',null,false),
     ].join('');
     const setx=c=>{c.options.scales.x.ticks=xticks(w.labels);};
     ch.ps.data.labels=w.labels;ch.ps.data.datasets[0].data=w.ps;setx(ch.ps);ch.ps.update();
