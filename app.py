@@ -9,17 +9,22 @@ volume Railway persistant (voir README).
 Variables d'environnement :
   DATA_DIR      Répertoire de données persistant (Railway : /data). Défaut : ./data
   UPLOAD_TOKEN  Mot de passe pour la page d'upload. Si absent, l'upload est désactivé.
+  USERS         Liste email:motdepasse séparés par des virgules. Ex: a@b.com:pass1,c@d.com:pass2
+  SECRET_KEY    Clé secrète Flask pour signer les cookies de session.
 """
 
 import hashlib
 import json
 import os
+from functools import wraps
 
-from flask import Flask, jsonify, request, send_from_directory, abort, Response
+from flask import Flask, jsonify, request, send_from_directory, Response, session, redirect, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import dashboard_data
 
 app = Flask(__name__, static_folder="static")
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(32))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BUNDLED_XLSX = os.path.join(BASE_DIR, "data", "source.xlsx")
@@ -27,6 +32,29 @@ DATA_DIR = os.environ.get("DATA_DIR", os.path.join(BASE_DIR, "data"))
 UPLOAD_TOKEN = os.environ.get("UPLOAD_TOKEN")
 
 os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def _load_users():
+    """Parse USERS=email:pass,email:pass depuis les variables d'environnement."""
+    raw = os.environ.get("USERS", "")
+    users = {}
+    for entry in raw.split(","):
+        entry = entry.strip()
+        if ":" in entry:
+            email, pwd = entry.split(":", 1)
+            users[email.strip().lower()] = pwd.strip()
+    return users
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not _load_users():
+            return f(*args, **kwargs)
+        if not session.get("user"):
+            return redirect(url_for("login", next=request.path))
+        return f(*args, **kwargs)
+    return decorated
 
 # Cache mémoire : {hash: data}
 _cache = {}
@@ -87,12 +115,60 @@ def get_data():
     return data
 
 
+LOGIN_PAGE = """<!doctype html><html lang=fr><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Connexion — Dashboard CGM</title>
+<style>body{{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#eef1f6;color:#1f2a44;
+display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}}
+.card{{background:#fff;padding:36px 32px;border-radius:14px;box-shadow:0 6px 24px rgba(20,40,80,.12);width:380px}}
+.logo{{background:linear-gradient(135deg,#16294d,#2f5aa8);color:#fff;border-radius:10px;padding:12px 16px;margin-bottom:24px}}
+.logo h1{{margin:0;font-size:17px;font-weight:700}}.logo p{{margin:4px 0 0;font-size:12px;opacity:.8}}
+label{{font-size:13px;font-weight:600;display:block;margin:14px 0 6px}}
+input{{width:100%;padding:10px 12px;border:1px solid #d8dee9;border-radius:8px;font-size:14px;box-sizing:border-box}}
+input:focus{{outline:none;border-color:#2f5aa8;box-shadow:0 0 0 3px rgba(47,90,168,.12)}}
+button{{margin-top:20px;width:100%;padding:11px;background:#2f5aa8;color:#fff;border:0;border-radius:8px;
+font-size:15px;font-weight:600;cursor:pointer}}button:hover{{background:#1b3a6b}}
+.err{{margin-top:14px;font-size:13.5px;color:#d1495b;background:#fff0f2;border:1px solid #f5c6cb;
+border-radius:8px;padding:10px 12px}}</style></head>
+<body><form class=card method=post>
+<div class=logo><h1>Dashboard CGM</h1><p>Suivi clientèle — Licences &amp; PS abonnés</p></div>
+<label>Adresse e-mail</label><input type=email name=email autocomplete=username required>
+<label>Mot de passe</label><input type=password name=password autocomplete=current-password required>
+<button type=submit>Se connecter</button>
+{msg}
+</form></body></html>"""
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    msg = ""
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        users = _load_users()
+        if email in users and users[email] == password:
+            session["user"] = email
+            session.permanent = True
+            next_url = request.args.get("next") or "/"
+            return redirect(next_url)
+        msg = '<div class="err">Email ou mot de passe incorrect.</div>'
+    return LOGIN_PAGE.format(msg=msg)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
+@login_required
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
 @app.route("/api/data")
+@login_required
 def api_data():
     data = get_data()
     meta = {
@@ -127,6 +203,7 @@ font-size:15px;font-weight:600;cursor:pointer}}.msg{{margin-top:16px;font-size:1
 
 
 @app.route("/upload", methods=["GET", "POST"])
+@login_required
 def upload():
     if not UPLOAD_TOKEN:
         return Response(
