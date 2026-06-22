@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi clientèle — Activité Licences & PS</title>
+<script src="/static/chart.umd.js"></script>
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#1f2a44;--muted:#6b7689;--line:#e3e8f0;
+--primary:#1b3a6b;--primary2:#2f5aa8;--ab:#1f9d8f;--na:#e0a13a;--pos:#1f9d8f;--neg:#d1495b;--grey:#aab4c5;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px 56px}
+header.top{background:linear-gradient(135deg,#16294d 0%,#2f5aa8 100%);color:#fff;padding:28px 0 64px;margin-bottom:-40px}
+.top-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.top h1{margin:0;font-size:23px;font-weight:700}
+.top .sub{margin:6px 0 0;opacity:.85;font-size:13.5px;max-width:680px;line-height:1.5}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:8px 14px;border-radius:10px;font-size:13px;text-align:right}
+.badge b{display:block;font-size:16px;margin-top:2px}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 20px}
+.filter{display:flex;gap:8px;flex-wrap:wrap}
+.filter button{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:9px 15px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 1px 2px rgba(20,40,80,.05)}
+.filter button:hover{border-color:var(--primary2);color:var(--primary)}
+.filter button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 1px 2px rgba(20,40,80,.05)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
+.seg button.active{background:var(--primary2);color:#fff}
+.seg .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:0 10px 0 6px;align-self:center}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 18px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05)}
+.kpi.star{border-color:#f0cd8f;background:linear-gradient(180deg,#fffaf0,#fff)}
+.kpi .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;min-height:28px}
+.kpi .val{font-size:29px;font-weight:750;margin:6px 0 2px;line-height:1}
+.kpi .delta{font-size:12.5px;font-weight:600}
+.kpi .delta.pos{color:var(--pos)}.kpi .delta.neg{color:var(--neg)}
+.kpi .delta span{color:var(--muted);font-weight:500}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 20px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05)}
+.panel.full{grid-column:1 / -1}
+.panel h3{margin:0 0 2px;font-size:15px;font-weight:700}
+.panel .hint{margin:0 0 13px;font-size:12.5px;color:var(--muted)}
+.chart-box{position:relative;height:270px}.chart-box.tall{height:320px}
+.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--na);border-radius:10px;padding:13px 16px;margin:0 0 20px;font-size:13.5px;line-height:1.55;color:#46506a}
+.note b{color:var(--ink)}
+.state{padding:60px 0;text-align:center;color:var(--muted);font-size:15px}
+footer{margin-top:28px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+footer a{color:var(--primary2)}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.controls{flex-direction:column;align-items:flex-start}}
+</style></head><body>
+<header class="top"><div class="top-inner">
+<div><h1>Suivi clientèle — Activité réelle</h1>
+<p class="sub">Au-delà du parc cumulé, focus sur les <b>utilisateurs actifs</b> (connectés sur 30 jours glissants) — notamment les non-abonnés encore vivants. Tableau de pilotage (COPIL).</p></div>
+<div class="badge">Dernière donnée<b id="lastDate">—</b></div>
+</div></header>
+<div class="wrap">
+<div id="app" class="state">Chargement des données…</div>
+<template id="tpl">
+<div class="controls">
+  <div class="filter" id="filter"></div>
+  <div class="seg" id="period"><span class="lbl">Période</span></div>
+</div>
+<div class="note">💡 La base de non-abonnés est un <b>cumul</b> qui ne peut que croître (comptes dormants inclus). Pour juger le vivier réel, on suit les non-abonnés <b>connectés sur 30 jours glissants</b>. Au dernier point : <b id="noteFig">—</b></div>
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <div class="panel"><h3>Non-abonnés : base cumulée vs actifs (30 j)</h3><p class="hint">L'écart = comptes dormants. Seuls les actifs constituent un vivier exploitable.</p><div class="chart-box"><canvas id="chGap"></canvas></div></div>
+  <div class="panel"><h3>PS actifs : abonnés vs non-abonnés</h3><p class="hint">Professionnels de santé connectés sur 30 jours glissants</p><div class="chart-box"><canvas id="chPsAct"></canvas></div></div>
+  <div class="panel"><h3>Évolution des non-abonnés actifs</h3><p class="hint">Vivier de prospects/clients à reconquérir réellement connectés (30 j)</p><div class="chart-box"><canvas id="chNaTrend"></canvas></div></div>
+  <div class="panel"><h3>Taux d'activité des abonnés</h3><p class="hint">Part des abonnés réellement connectés (actifs / base)</p><div class="chart-box"><canvas id="chRate"></canvas></div></div>
+  <div class="panel full"><h3>Non-abonnés par profession — actifs vs dormants (dernier point)</h3><p class="hint">Où se trouve le vivier réellement actif, et le poids des comptes dormants</p><div class="chart-box tall"><canvas id="chBreak"></canvas></div></div>
+</div>
+<footer>Source : fichier interne « Publimaj Licences et PS abonnés ». Données hebdomadaires (médiane par semaine).<br>
+« Actifs » = connectés sur 30 jours glissants. Pourcentages recalculés à partir des effectifs. · <a href="/upload">Mettre à jour les données</a></footer>
+</template>
+</div>
+<script>
+const PROFS=['Total','Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
+const PERIODS=[['3 mois',92],['6 mois',184],['12 mois',366],['Tout',null]];
+
+function frDate(iso){const[y,m,d]=iso.split('-');const mn=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];return +d+' '+mn[+m-1]+' '+y;}
+function frShort(iso){const[y,m]=iso.split('-');const mn=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];return mn[+m-1]+" '"+y.slice(2);}
+function fmt(n){return n==null?'—':Math.round(n).toLocaleString('fr-FR');}
+function pct(n){return n==null?'—':(n*100).toFixed(1).replace('.',',')+'%';}
+
+function boot(DATA){
+  let curProf='Total', curDays=366;
+  const ALL=DATA['Total'].labels;
+  const lastD=ALL[ALL.length-1];
+  // monter l'UI depuis le template
+  document.getElementById('app').replaceWith(document.getElementById('tpl').content.cloneNode(true));
+  document.getElementById('lastDate').textContent=frDate(lastD);
+
+  function startIdx(days){if(!days)return 0;const last=new Date(lastD);const lim=new Date(last);lim.setDate(lim.getDate()-days);
+    for(let i=0;i<ALL.length;i++){if(new Date(ALL[i])>=lim)return i;}return 0;}
+  function win(){const s=DATA[curProf];const i0=startIdx(curDays);const e=ALL.length-1;
+    const sl=a=>a.slice(i0);const labels=sl(ALL);
+    const ps_ab_act=sl(s.ps_ab_act),ps_na_act=sl(s.ps_na_act),ps_na_base=sl(s.ps_na_base),ps_ab_base=sl(s.ps_ab_base),
+          lic_ab_act=sl(s.lic_ab_act),lic_na_act=sl(s.lic_na_act);
+    const rate=ps_ab_act.map((v,i)=>ps_ab_base[i]?v/ps_ab_base[i]:null);
+    return {labels,ps_ab_act,ps_na_act,ps_na_base,ps_ab_base,lic_ab_act,lic_na_act,rate,i0,e};}
+
+  Chart.defaults.font.family='-apple-system,Segoe UI,Roboto,sans-serif';Chart.defaults.color='#6b7689';
+  const gridY={color:'#eef1f6'},gridX={display:false};
+  function xticks(labels){return{maxRotation:0,autoSkip:true,maxTicksLimit:8,font:{size:11},color:'#6b7689',
+    callback:function(v){const l=labels[v]||this.getLabelForValue(v);return l?frShort(l):'';}};}
+  function legend(){return{position:'top',align:'end',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'rectRounded',padding:13,font:{size:12,weight:'600'},color:'#1f2a44'}};}
+  function tip(kind){return{callbacks:{title:i=>frDate(i[0].label),label:c=>c.dataset.label+' : '+(kind==='pct'?pct(c.parsed.y):fmt(c.parsed.y))}};}
+
+  let ch={};
+  function lineChart(id,ds,kind){return new Chart(document.getElementById(id),{type:'line',data:{labels:[],datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:ds.length>1?legend():{display:false},tooltip:tip(kind)},
+    scales:{x:{ticks:{},grid:gridX},y:{beginAtZero:kind!=='pct',grid:gridY,ticks:{callback:v=>kind==='pct'?(v*100).toFixed(0)+'%':fmt(v)}}}}});}
+
+  ch.gap=lineChart('chGap',[
+    {label:'Base non-abonnés (cumul)',data:[],borderColor:'#aab4c5',backgroundColor:'#aab4c520',borderDash:[5,4],fill:true,borderWidth:2,pointRadius:0,tension:.2},
+    {label:'Non-abonnés actifs (30 j)',data:[],borderColor:'#e0a13a',backgroundColor:'#e0a13a26',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}]);
+  ch.psAct=lineChart('chPsAct',[
+    {label:'Abonnés actifs',data:[],borderColor:'#1f9d8f',backgroundColor:'#1f9d8f26',fill:true,borderWidth:2.5,pointRadius:0,tension:.2},
+    {label:'Non-abonnés actifs',data:[],borderColor:'#e0a13a',backgroundColor:'#e0a13a26',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}]);
+  ch.na=lineChart('chNaTrend',[
+    {label:'Non-abonnés actifs',data:[],borderColor:'#e0a13a',backgroundColor:'#e0a13a26',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}]);
+  ch.rate=lineChart('chRate',[
+    {label:'Taux',data:[],borderColor:'#2f5aa8',backgroundColor:'#2f5aa81f',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}],'pct');
+  ch.rate.options.scales.y.min=0.5;ch.rate.options.scales.y.max=1.0;
+
+  ch.break=new Chart(document.getElementById('chBreak'),{type:'bar',
+    data:{labels:['Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'],datasets:[
+      {label:'Non-abonnés actifs (30 j)',data:[],backgroundColor:'#e0a13a',stack:'s',order:2},
+      {label:'Non-abonnés dormants',data:[],backgroundColor:'#e6e9ef',borderRadius:5,stack:'s',order:2},
+      {label:'% actifs',yAxisID:'y1',type:'line',data:[],borderColor:'#16294d',backgroundColor:'#16294d',borderWidth:0,pointRadius:5,pointStyle:'rectRot',showLine:false,order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:legend(),
+      tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'?c.dataset.label+' : '+pct(c.parsed.y):c.dataset.label+' : '+fmt(c.parsed.y)}}},
+      scales:{x:{grid:gridX,stacked:true,ticks:{font:{size:12,weight:'600'},color:'#1f2a44'}},
+      y:{stacked:true,grid:gridY,title:{display:true,text:'Non-abonnés (base totale)'},ticks:{callback:v=>fmt(v)}},
+      y1:{position:'right',grid:{display:false},min:0,max:0.5,title:{display:true,text:'% actifs'},ticks:{callback:v=>(v*100).toFixed(0)+'%'}}}}});
+
+  function kc(label,val,delta,unit,star){
+    let d='';
+    if(delta!=null){const pos=delta>=0;const cls=pos?'pos':'neg';const ar=pos?'▲ ':'▼ ';
+      const dv=unit==='pts'?Math.abs(delta).toFixed(1).replace('.',',')+' pts':Math.abs(delta).toFixed(0)+'%';
+      d=`<div class="delta ${cls}">${ar}${dv} <span>sur la période</span></div>`;}
+    return `<div class="kpi${star?' star':''}"><div class="label">${label}</div><div class="val">${val}</div>${d}</div>`;}
+
+  function render(){
+    const w=win();const n=w.labels.length-1;
+    const chg=(a)=>a[0]?((a[n]-a[0])/a[0]*100):null;
+    const s=DATA[curProf];const E=ALL.length-1;
+    const base=s.ps_na_base[E],act=s.ps_na_act[E];const dorm=base-act;
+    document.getElementById('noteFig').textContent=`${fmt(act)} non-abonnés actifs sur ${fmt(base)} dans la base — soit ${pct(dorm/base)} de comptes dormants (${curProf==='Total'?'tous PS':curProf}).`;
+    document.getElementById('kpis').innerHTML=[
+      kc('Non-abonnés actifs (30 j)',fmt(w.ps_na_act[n]),chg(w.ps_na_act),'%',true),
+      kc('Abonnés actifs (30 j)',fmt(w.ps_ab_act[n]),chg(w.ps_ab_act),'%',false),
+      kc("Taux d'activité des abonnés",pct(w.rate[n]),w.rate[0]!=null?(w.rate[n]-w.rate[0])*100:null,'pts',false),
+      kc('Licences abonnées actives',fmt(w.lic_ab_act[n]),chg(w.lic_ab_act),'%',false),
+    ].join('');
+    const setx=c=>{c.options.scales.x.ticks=xticks(w.labels);};
+    ch.gap.data.labels=w.labels;ch.gap.data.datasets[0].data=w.ps_na_base;ch.gap.data.datasets[1].data=w.ps_na_act;setx(ch.gap);ch.gap.update();
+    ch.psAct.data.labels=w.labels;ch.psAct.data.datasets[0].data=w.ps_ab_act;ch.psAct.data.datasets[1].data=w.ps_na_act;setx(ch.psAct);ch.psAct.update();
+    ch.na.data.labels=w.labels;ch.na.data.datasets[0].data=w.ps_na_act;setx(ch.na);ch.na.update();
+    ch.rate.data.labels=w.labels;ch.rate.data.datasets[0].data=w.rate;setx(ch.rate);ch.rate.update();
+    const profs=['Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
+    ch.break.data.datasets[0].data=profs.map(p=>DATA[p].ps_na_act[E]);
+    ch.break.data.datasets[1].data=profs.map(p=>DATA[p].ps_na_base[E]-DATA[p].ps_na_act[E]);
+    ch.break.data.datasets[2].data=profs.map(p=>{const b=DATA[p].ps_na_base[E];return b?DATA[p].ps_na_act[E]/b:null;});
+    ch.break.update();
+  }
+  const fc=document.getElementById('filter');
+  PROFS.forEach(p=>{const b=document.createElement('button');b.textContent=(p==='Total'?'Synthèse':p);if(p===curProf)b.classList.add('active');
+    b.onclick=()=>{curProf=p;[...fc.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');render();};fc.appendChild(b);});
+  const pc=document.getElementById('period');
+  PERIODS.forEach(([lbl,days])=>{const b=document.createElement('button');b.textContent=lbl;if(days===curDays)b.classList.add('active');
+    b.onclick=()=>{curDays=days;[...pc.querySelectorAll('button')].forEach(x=>x.classList.remove('active'));b.classList.add('active');render();};pc.appendChild(b);});
+  render();
+}
+
+fetch('/api/data').then(r=>r.json()).then(j=>boot(j.data)).catch(e=>{
+  document.getElementById('app').innerHTML='Erreur de chargement des données : '+e;
+});
+</script></body></html>
