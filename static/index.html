@@ -23,7 +23,7 @@ header.top{background:linear-gradient(135deg,#16294d 0%,#2f5aa8 100%);color:#fff
 .seg button{border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
 .seg button.active{background:var(--primary2);color:#fff}
 .seg .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:0 10px 0 6px;align-self:center}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 18px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05)}
 .kpi.star{border-color:#a8d5cf;background:linear-gradient(180deg,#f0faf9,#fff)}
 .kpi .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;min-height:28px}
@@ -32,16 +32,41 @@ header.top{background:linear-gradient(135deg,#16294d 0%,#2f5aa8 100%);color:#fff
 .kpi .delta.pos{color:var(--pos)}.kpi .delta.neg{color:var(--neg)}
 .kpi .delta span{color:var(--muted);font-weight:500}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 20px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 20px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05);position:relative}
 .panel.full{grid-column:1 / -1}
-.panel h3{margin:0 0 2px;font-size:15px;font-weight:700}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px}
+.panel h3{margin:0;font-size:15px;font-weight:700}
 .panel .hint{margin:0 0 13px;font-size:12.5px;color:var(--muted)}
+.expand-btn{background:none;border:1px solid var(--line);border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;flex-shrink:0;transition:all .15s}
+.expand-btn:hover{border-color:var(--primary2);color:var(--primary)}
 .chart-box{position:relative;height:270px}.chart-box.tall{height:320px}
 .state{padding:60px 0;text-align:center;color:var(--muted);font-size:15px}
 footer{margin-top:28px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
 footer a{color:var(--primary2)}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.controls{flex-direction:column;align-items:flex-start}}
+/* Modale plein écran */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,50,.55);z-index:100;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:16px;padding:24px 24px 20px;width:100%;max-width:1100px;box-shadow:0 20px 60px rgba(15,25,50,.25)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.modal-header h3{margin:0;font-size:17px;font-weight:700}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--ink)}
+.modal .hint{margin:0 0 16px;font-size:13px;color:var(--muted)}
+.modal-chart-box{position:relative;height:460px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.controls{flex-direction:column;align-items:flex-start}.modal-chart-box{height:300px}}
 </style></head><body>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <p class="hint" id="modalHint"></p>
+    <div class="modal-chart-box"><canvas id="chModal"></canvas></div>
+  </div>
+</div>
+
 <header class="top"><div class="top-inner">
 <div><h1>Suivi clientèle — Abonnés</h1>
 <p class="sub">Parc des <b>PS abonnés</b> et <b>Licences abonnées</b> par profession. Tableau de pilotage (COPIL).</p></div>
@@ -56,9 +81,21 @@ footer a{color:var(--primary2)}
 </div>
 <div class="kpis" id="kpis"></div>
 <div class="grid">
-  <div class="panel"><h3>PS abonnés — évolution</h3><p class="hint">Nombre de professionnels de santé abonnés sur la période</p><div class="chart-box"><canvas id="chPs"></canvas></div></div>
-  <div class="panel"><h3>Licences abonnées — évolution</h3><p class="hint">Nombre de licences abonnées sur la période</p><div class="chart-box"><canvas id="chLic"></canvas></div></div>
-  <div class="panel full"><h3>PS abonnés &amp; Licences abonnées — par profession (dernier point)</h3><p class="hint">Répartition du parc abonné entre les 5 professions</p><div class="chart-box tall"><canvas id="chBreak"></canvas></div></div>
+  <div class="panel">
+    <div class="panel-header"><h3>PS abonnés — évolution</h3><button class="expand-btn" data-chart="ps" title="Agrandir">⤢</button></div>
+    <p class="hint">Nombre de professionnels de santé abonnés sur la période</p>
+    <div class="chart-box"><canvas id="chPs"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h3>Licences abonnées — évolution</h3><button class="expand-btn" data-chart="lic" title="Agrandir">⤢</button></div>
+    <p class="hint">Nombre de licences abonnées sur la période</p>
+    <div class="chart-box"><canvas id="chLic"></canvas></div>
+  </div>
+  <div class="panel full">
+    <div class="panel-header"><h3>PS abonnés &amp; Licences abonnées — par profession (dernier point)</h3><button class="expand-btn" data-chart="break" title="Agrandir">⤢</button></div>
+    <p class="hint">Répartition du parc abonné entre les 5 professions</p>
+    <div class="chart-box tall"><canvas id="chBreak"></canvas></div>
+  </div>
 </div>
 <footer>Source : fichier interne « Publimaj Licences et PS abonnés ». Données hebdomadaires (médiane par semaine). · <a href="/upload">Mettre à jour les données</a></footer>
 </template>
@@ -87,7 +124,7 @@ function boot(DATA){
 
   Chart.defaults.font.family='-apple-system,Segoe UI,Roboto,sans-serif';Chart.defaults.color='#6b7689';
   const gridY={color:'#eef1f6'},gridX={display:false};
-  function xticks(labels){return{maxRotation:0,autoSkip:true,maxTicksLimit:8,font:{size:11},color:'#6b7689',
+  function xticks(labels,limit){return{maxRotation:0,autoSkip:true,maxTicksLimit:limit||8,font:{size:11},color:'#6b7689',
     callback:function(v){const l=labels[v]||this.getLabelForValue(v);return l?frShort(l):'';}};}
   function legend(){return{position:'top',align:'end',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'rectRounded',padding:13,font:{size:12,weight:'600'},color:'#1f2a44'}};}
   function tip(){return{callbacks:{title:i=>frDate(i[0].label),label:c=>c.dataset.label+' : '+fmt(c.parsed.y)}};}
@@ -111,6 +148,48 @@ function boot(DATA){
       scales:{x:{grid:gridX,ticks:{font:{size:12,weight:'600'},color:'#1f2a44'}},
       y:{grid:gridY,ticks:{callback:v=>fmt(v)}}}}});
 
+  // --- Modale plein écran ---
+  let chModal=null;
+  const overlay=document.getElementById('modalOverlay');
+  const modalTitle=document.getElementById('modalTitle');
+  const modalHint=document.getElementById('modalHint');
+
+  const CHART_META={
+    ps:{title:'PS abonnés — évolution',hint:'Nombre de professionnels de santé abonnés sur la période'},
+    lic:{title:'Licences abonnées — évolution',hint:'Nombre de licences abonnées sur la période'},
+    break:{title:'PS abonnés & Licences abonnées — par profession (dernier point)',hint:'Répartition du parc abonné entre les 5 professions'}
+  };
+
+  function openModal(key){
+    const src=ch[key];
+    modalTitle.textContent=CHART_META[key].title;
+    modalHint.textContent=CHART_META[key].hint;
+    if(chModal){chModal.destroy();chModal=null;}
+    chModal=new Chart(document.getElementById('chModal'),{
+      type:src.config.type,
+      data:JSON.parse(JSON.stringify(src.data)),
+      options:{...JSON.parse(JSON.stringify(src.options)),responsive:true,maintainAspectRatio:false,
+        scales:{...JSON.parse(JSON.stringify(src.options.scales||{}))}}
+    });
+    overlay.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+
+  function closeModal(){
+    overlay.classList.remove('open');
+    document.body.style.overflow='';
+    if(chModal){chModal.destroy();chModal=null;}
+  }
+
+  document.getElementById('modalClose').onclick=closeModal;
+  overlay.onclick=e=>{if(e.target===overlay)closeModal();};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('.expand-btn');
+    if(btn)openModal(btn.dataset.chart);
+  });
+
   function kc(label,val,delta,star){
     let d='';
     if(delta!=null){const pos=delta>=0;const cls=pos?'pos':'neg';const ar=pos?'▲ ':'▼ ';
@@ -121,7 +200,6 @@ function boot(DATA){
     const w=win();const n=w.labels.length-1;
     const E=ALL.length-1;
     const chg=(a)=>a[0]?((a[n]-a[0])/a[0]*100):null;
-    const s=DATA[curProf];
     document.getElementById('kpis').innerHTML=[
       kc('PS abonnés',fmt(w.ps[n]),chg(w.ps),true),
       kc('Licences abonnées',fmt(w.lic[n]),chg(w.lic),false),
