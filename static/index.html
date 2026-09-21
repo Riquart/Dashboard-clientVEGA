@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="fr"><head>
+<base href="__BASE__">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suivi clientèle — Abonnés</title>
-<script src="/static/chart.umd.js"></script>
+<script src="static/chart.umd.js"></script>
 <style>
 :root{--bg:#eef1f6;--card:#fff;--ink:#1f2a44;--muted:#6b7689;--line:#e3e8f0;
 --primary:#1b3a6b;--primary2:#2f5aa8;--ps:#1f9d8f;--lic:#2f5aa8;--pos:#1f9d8f;--neg:#d1495b;}
@@ -97,7 +98,7 @@ footer a{color:var(--primary2)}
     <div class="chart-box tall"><canvas id="chBreak"></canvas></div>
   </div>
 </div>
-<footer>Source : fichier interne « Publimaj Licences et PS abonnés ». Données hebdomadaires (médiane par semaine). · <a href="/upload">Mettre à jour les données</a></footer>
+<footer>Source : fichier interne « Publimaj Licences et PS abonnés ». Données hebdomadaires (médiane par semaine). · <a href="upload">Mettre à jour les données</a></footer>
 </template>
 </div>
 <script>
@@ -222,7 +223,7 @@ function boot(DATA){
   render();
 }
 
-fetch('/api/data').then(r=>r.json()).then(j=>boot(j.data)).catch(e=>{
+fetch('api/data').then(r=>r.json()).then(j=>boot(j.data)).catch(e=>{
   document.getElementById('app').innerHTML='Erreur de chargement des données : '+e;
 });
 </script></body></html>

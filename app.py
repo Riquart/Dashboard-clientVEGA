@@ -11,6 +11,9 @@ Variables d'environnement :
   UPLOAD_TOKEN  Mot de passe pour la page d'upload. Si absent, l'upload est désactivé.
   USERS         Liste email:motdepasse séparés par des virgules. Ex: a@b.com:pass1,c@d.com:pass2
   SECRET_KEY    Clé secrète Flask pour signer les cookies de session.
+  URL_PREFIX    Prefixe d'hebergement (ex. « dashboard »). Vide, l'application
+                se sert a la racine. Renseigne, elle se sert sous ce chemin, ce
+                qui permet au portail de la relayer derriere une authentification.
 """
 
 import hashlib
@@ -19,6 +22,7 @@ import os
 from functools import wraps
 
 from flask import Flask, jsonify, request, send_from_directory, Response, session, redirect, url_for
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import dashboard_data
@@ -30,6 +34,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BUNDLED_XLSX = os.path.join(BASE_DIR, "data", "source.xlsx")
 DATA_DIR = os.environ.get("DATA_DIR", os.path.join(BASE_DIR, "data"))
 UPLOAD_TOKEN = os.environ.get("UPLOAD_TOKEN")
+
+# Prefixe d'hebergement. Vide : l'application se sert a la racine (comportement
+# d'origine). Renseigne : elle se sert sous /<prefixe>, ce qui permet au portail
+# de la relayer derriere une authentification.
+PREFIXE = os.environ.get("URL_PREFIX", "").strip().strip("/")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -164,7 +173,16 @@ def logout():
 @app.route("/")
 @login_required
 def index():
-    return send_from_directory(app.static_folder, "index.html")
+    """Sert le dashboard, en indiquant au navigateur ou se trouve la racine.
+
+    La balise <base> permet aux chemins relatifs du front-end (api/data,
+    static/..., upload) de rester justes quel que soit le prefixe, et meme si
+    l'adresse ne se termine pas par une barre oblique.
+    """
+    base = f"/{PREFIXE}/" if PREFIXE else "/"
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        page = f.read()
+    return Response(page.replace("__BASE__", base), mimetype="text/html")
 
 
 @app.route("/api/data")
@@ -198,7 +216,7 @@ font-size:15px;font-weight:600;cursor:pointer}}.msg{{margin-top:16px;font-size:1
 <label>Mot de passe</label><input type=password name=token required>
 <button type=submit>Mettre à jour</button>
 {msg}
-<p style=margin-top:18px><a href="/">← Retour au dashboard</a></p>
+<p style=margin-top:18px><a href="{{base}}">← Retour au dashboard</a></p>
 </form></body></html>"""
 
 
@@ -228,12 +246,29 @@ def upload():
                     msg = '<div class="msg ok">✓ Données mises à jour.</div>'
                 except Exception as e:  # noqa: BLE001
                     msg = f'<div class="msg err">Fichier enregistré mais erreur de lecture : {e}</div>'
-    return UPLOAD_PAGE.format(msg=msg)
+    return UPLOAD_PAGE.format(msg=msg, base=f"/{PREFIXE}/" if PREFIXE else "/")
 
 
 @app.route("/healthz")
 def healthz():
     return "ok", 200
+
+
+# ── Montage sous un prefixe, si demande ──────────────────────────────────────
+# /healthz doit rester joignable a la racine : Railway le verifie, et il
+# repondrait 404 si l'application etait montee sans cette precaution.
+def _racine(environ, start_response):
+    """Ce qui reste accessible a la racine quand l'application est montee."""
+    chemin = (environ.get("PATH_INFO") or "").rstrip("/")
+    if chemin == "/healthz":
+        start_response("200 OK", [("Content-Type", "text/plain; charset=utf-8")])
+        return [b"ok"]
+    start_response("404 NOT FOUND", [("Content-Type", "text/plain; charset=utf-8")])
+    return [b"introuvable"]
+
+
+if PREFIXE:
+    app.wsgi_app = DispatcherMiddleware(_racine, {f"/{PREFIXE}": app.wsgi_app})
 
 
 if __name__ == "__main__":
