@@ -251,7 +251,12 @@ def upload():
 
 @app.route("/healthz")
 def healthz():
-    return "ok", 200
+    import os as _os  # diagnostic temporaire
+    return "diag {} {} {}".format(
+        _os.environ.get("RAILWAY_PRIVATE_DOMAIN", "?"),
+        _os.environ.get("PORT", "?"),
+        _os.environ.get("RAILWAY_PUBLIC_DOMAIN", "?"),
+    ), 200
 
 
 # ── Montage sous un prefixe, si demande ──────────────────────────────────────
