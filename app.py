@@ -203,6 +203,36 @@ def api_data():
     return jsonify({"meta": meta, "data": data})
 
 
+@app.route("/api/indicateurs")
+def api_indicateurs():
+    """Indicateurs agregees pour le tableau de bord general.
+
+    Lecture seule, SANS authentification : appele de machine a machine par le
+    service « tableau de bord » (reseau prive Railway). N'expose que des
+    comptages agreges, jamais de detail nominal (RGPD).
+    """
+    data = get_data()
+    total = data.get("Total", {})
+    labels = total.get("labels", [])
+
+    def dernier(metrique):
+        serie = total.get(metrique, [])
+        if not serie:
+            return None
+        v = serie[-1]
+        return int(v) if v is not None else None
+
+    return jsonify({
+        "semaine": labels[-1] if labels else None,
+        # Parc abonnes (dernier releve)
+        "abonnes_ps": dernier("ps_ab_base"),
+        "abonnes_licences": dernier("lic_ab_base"),
+        # Activite reelle sur 30 jours glissants (abonnes)
+        "actifs_ps_30j": dernier("ps_ab_act"),
+        "actifs_licences_30j": dernier("lic_ab_act"),
+    })
+
+
 UPLOAD_PAGE = """<!doctype html><html lang=fr><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>Mettre à jour les données</title>
