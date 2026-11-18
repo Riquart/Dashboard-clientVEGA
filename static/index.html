@@ -1,229 +1,500 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
 <base href="__BASE__">
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Suivi clientèle — Abonnés</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Suivi clientèle — Licences &amp; PS abonnés</title>
 <script src="static/chart.umd.js"></script>
 <style>
-:root{--bg:#eef1f6;--card:#fff;--ink:#1f2a44;--muted:#6b7689;--line:#e3e8f0;
---primary:#1b3a6b;--primary2:#2f5aa8;--ps:#1f9d8f;--lic:#2f5aa8;--pos:#1f9d8f;--neg:#d1495b;}
+:root{
+  --bg:#eef1f6;--card:#fff;--ink:#1f2a44;--muted:#6b7689;--line:#e3e8f0;
+  --primary:#1b3a6b;--primary2:#2f5aa8;--ps:#1f9d8f;--lic:#2f5aa8;
+  --pos:#1f9d8f;--neg:#d1495b;--shadow:0 3px 14px rgba(20,40,80,.055);
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-.wrap{max-width:1280px;margin:0 auto;padding:0 24px 56px}
-header.top{background:linear-gradient(135deg,#16294d 0%,#2f5aa8 100%);color:#fff;padding:28px 0 64px;margin-bottom:-40px}
-.top-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
-.top h1{margin:0;font-size:23px;font-weight:700}
-.top .sub{margin:6px 0 0;opacity:.85;font-size:13.5px;max-width:680px;line-height:1.5}
-.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:8px 14px;border-radius:10px;font-size:13px;text-align:right}
-.badge b{display:block;font-size:16px;margin-top:2px}
-.controls{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 20px}
-.filter{display:flex;gap:8px;flex-wrap:wrap}
-.filter button{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:9px 15px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 1px 2px rgba(20,40,80,.05)}
-.filter button:hover{border-color:var(--primary2);color:var(--primary)}
-.filter button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 1px 2px rgba(20,40,80,.05)}
-.seg button{border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
-.seg button.active{background:var(--primary2);color:#fff}
-.seg .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:0 10px 0 6px;align-self:center}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 18px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05)}
-.kpi.star{border-color:#a8d5cf;background:linear-gradient(180deg,#f0faf9,#fff)}
-.kpi .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;min-height:28px}
-.kpi .val{font-size:29px;font-weight:750;margin:6px 0 2px;line-height:1}
-.kpi .delta{font-size:12.5px;font-weight:600}
-.kpi .delta.pos{color:var(--pos)}.kpi .delta.neg{color:var(--neg)}
+html{scroll-behavior:smooth}
+body{margin:0;min-width:320px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button,a{-webkit-tap-highlight-color:transparent}
+button{font:inherit}
+button:focus-visible,a:focus-visible{outline:3px solid rgba(47,90,168,.35);outline-offset:3px}
+.skip-link{position:fixed;left:16px;top:-60px;z-index:200;background:#fff;color:var(--primary);padding:10px 14px;border-radius:8px;box-shadow:var(--shadow)}
+.skip-link:focus{top:12px}
+.top{background:linear-gradient(135deg,#16294d 0%,#1b3a6b 48%,#2f5aa8 100%);color:#fff;padding:28px 0 72px;margin-bottom:-44px}
+.top-inner{max-width:1320px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:24px}
+.eyebrow{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;opacity:.7}
+.top h1{margin:0;font-size:26px;line-height:1.2;font-weight:720;letter-spacing:-.35px}
+.top .sub{margin:7px 0 0;opacity:.84;font-size:13.5px;line-height:1.5}
+.badge{flex:0 0 auto;min-width:176px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:11px 15px;border-radius:12px;text-align:right;backdrop-filter:blur(4px)}
+.badge span{display:block;font-size:11px;letter-spacing:.35px;opacity:.72}
+.badge b{display:block;font-size:15px;margin-top:3px;font-weight:650}
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px 48px}
+.state{padding:80px 20px;text-align:center;color:var(--muted);font-size:14px}
+.state.error{color:var(--neg);background:#fff;border:1px solid #efd5da;border-radius:14px;margin-top:16px}
+.controls{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:20px}
+.filter-group{min-width:0}
+.control-label{display:block;margin:0 0 8px 2px;font-size:10.5px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.65px}
+.filter,.seg{display:flex;gap:6px;flex-wrap:wrap}
+.filter button,.seg button{border:1px solid transparent;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:620;line-height:1.2;cursor:pointer;transition:background .15s,color .15s,border-color .15s,box-shadow .15s;white-space:nowrap}
+.filter button{background:#f5f7fa;border-color:#e8ecf2}
+.filter button:hover,.seg button:hover{color:var(--primary);border-color:#b9c8df}
+.filter button.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 2px 5px rgba(27,58,107,.18)}
+.seg{padding:3px;background:#f5f7fa;border:1px solid #e8ecf2;border-radius:10px;gap:2px}
+.seg button{padding:7px 10px}
+.seg button.active{background:#fff;color:var(--primary);border-color:#d8e0eb;box-shadow:0 1px 4px rgba(20,40,80,.08)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}
+.kpi{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px 19px 16px;box-shadow:var(--shadow);min-height:142px;display:flex;flex-direction:column}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary2)}
+.kpi.teal::before{background:var(--ps)}
+.kpi.navy::before{background:var(--primary)}
+.kpi.slate::before{background:#8290a6}
+.kpi .label{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.35px;line-height:1.35}
+.kpi .val{font-size:31px;font-weight:740;margin:10px 0 8px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.kpi .delta{margin-top:auto;font-size:12px;font-weight:700;line-height:1.45;font-variant-numeric:tabular-nums}
+.kpi .delta.pos{color:var(--pos)}.kpi .delta.neg{color:var(--neg)}.kpi .delta.neutral{color:var(--muted);font-weight:550}
 .kpi .delta span{color:var(--muted);font-weight:500}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 20px 15px;box-shadow:0 2px 10px rgba(20,40,80,.05);position:relative}
-.panel.full{grid-column:1 / -1}
-.panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px}
-.panel h3{margin:0;font-size:15px;font-weight:700}
-.panel .hint{margin:0 0 13px;font-size:12.5px;color:var(--muted)}
-.expand-btn{background:none;border:1px solid var(--line);border-radius:7px;padding:4px 8px;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;flex-shrink:0;transition:all .15s}
-.expand-btn:hover{border-color:var(--primary2);color:var(--primary)}
-.chart-box{position:relative;height:270px}.chart-box.tall{height:320px}
-.state{padding:60px 0;text-align:center;color:var(--muted);font-size:15px}
-footer{margin-top:28px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
-footer a{color:var(--primary2)}
-/* Modale plein écran */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,50,.55);z-index:100;align-items:center;justify-content:center;padding:24px}
+.kpi .secondary{margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.4}
+.kpi .secondary b{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px 16px;box-shadow:var(--shadow);position:relative;min-width:0}
+.panel.full{grid-column:1/-1}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px}
+.panel-title{min-width:0}
+.panel h2{margin:0;font-size:15px;font-weight:720;line-height:1.35;letter-spacing:-.1px}
+.panel .hint{margin:5px 0 14px;font-size:12px;color:var(--muted);line-height:1.45}
+.panel .range{margin:-8px 0 12px;font-size:11.5px;color:var(--muted);line-height:1.5;font-variant-numeric:tabular-nums}
+.panel-tools{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.metric-switch{display:inline-flex;padding:3px;gap:2px;border:1px solid var(--line);border-radius:9px;background:#f5f7fa}
+.metric-switch button{border:0;background:transparent;color:var(--muted);border-radius:6px;padding:6px 10px;font-size:11.5px;font-weight:650;cursor:pointer;white-space:nowrap}
+.metric-switch button.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(20,40,80,.1)}
+.expand-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--muted);transition:all .15s;flex:0 0 auto}
+.expand-btn:hover{border-color:var(--primary2);color:var(--primary);background:#f7f9fc}
+.expand-btn svg{width:15px;height:15px}
+.chart-box{position:relative;height:280px}
+.chart-box.tall{height:330px}
+.chart-box.compare{height:320px}
+.chart-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:13px;background:rgba(255,255,255,.78);pointer-events:none}
+.chart-empty[hidden]{display:none}
+footer{margin-top:24px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7}
+footer a{color:var(--primary2);font-weight:600;text-underline-offset:3px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,50,.64);z-index:100;align-items:center;justify-content:center;padding:24px}
 .modal-overlay.open{display:flex}
-.modal{background:var(--card);border-radius:16px;padding:24px 24px 20px;width:100%;max-width:1100px;box-shadow:0 20px 60px rgba(15,25,50,.25)}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.modal-header h3{margin:0;font-size:17px;font-weight:700}
-.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
-.modal-close:hover{color:var(--ink)}
-.modal .hint{margin:0 0 16px;font-size:13px;color:var(--muted)}
-.modal-chart-box{position:relative;height:460px}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.controls{flex-direction:column;align-items:flex-start}.modal-chart-box{height:300px}}
-</style></head><body>
+.modal{background:var(--card);border-radius:16px;padding:22px 24px 20px;width:100%;max-width:1240px;height:min(760px,calc(100dvh - 48px));box-shadow:0 20px 60px rgba(15,25,50,.28);display:flex;flex-direction:column}
+.modal-header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.modal-header h2{margin:0;font-size:18px;font-weight:720}
+.modal-close{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:#f5f7fa;border:1px solid var(--line);border-radius:8px;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.modal-close:hover{color:var(--ink);border-color:#b9c8df}
+.modal .hint{margin:7px 0 14px;font-size:12.5px;color:var(--muted);line-height:1.5}
+.modal-chart-box{position:relative;flex:1;min-height:0}
+@media(max-width:1120px){
+  .controls{flex-direction:column;align-items:stretch}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .grid{grid-template-columns:1fr}
+  .panel.full{grid-column:auto}
+  .top-inner{align-items:flex-start}
+  .modal-chart-box{min-height:280px}
+}
+@media(max-width:600px){
+  .top{padding:22px 0 64px;margin-bottom:-38px}
+  .top-inner{padding:0 16px;flex-direction:column;gap:16px}
+  .top h1{font-size:23px}
+  .badge{text-align:left;min-width:0;padding:9px 12px}
+  .badge span,.badge b{display:inline;font-size:12px}
+  .badge b{margin-left:6px}
+  .wrap{padding:0 12px 32px}
+  .controls{padding:13px 12px;gap:15px;border-radius:14px}
+  .filter,.seg{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+  .filter button,.seg button{flex:0 0 auto}
+  .kpis{gap:12px;margin-bottom:16px}
+  .kpi{padding:16px;min-height:136px}
+  .kpi .val{font-size:28px}
+  .panel{padding:16px 13px 13px;border-radius:14px}
+  .panel-header{gap:8px;flex-wrap:wrap}
+  .panel-tools{width:100%;justify-content:space-between}
+  .chart-box{height:250px}.chart-box.compare{height:280px}.chart-box.tall{height:300px}
+  .modal-overlay{padding:0}
+  .modal{max-width:none;height:100dvh;border-radius:0;padding:18px 14px}
+}
+@media(max-width:420px){.kpis{grid-template-columns:1fr}.kpi{min-height:128px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#app">Aller au contenu</a>
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <p class="eyebrow">CGM · Pilotage clientèle</p>
+      <h1>Suivi clientèle</h1>
+      <p class="sub">Licences &amp; PS abonnés · activité des non-abonnés</p>
+    </div>
+    <div class="badge"><span>Dernière donnée</span><b id="lastDate">—</b></div>
+  </div>
+</header>
+<div class="wrap">
+  <main id="app" class="state" role="status" aria-live="polite">Chargement des données…</main>
+  <template id="tpl">
+    <section class="controls" aria-label="Filtres du tableau de bord">
+      <div class="filter-group">
+        <span class="control-label" id="professionLabel">Profession</span>
+        <div class="filter" id="filter" role="group" aria-labelledby="professionLabel"></div>
+      </div>
+      <div class="filter-group">
+        <span class="control-label" id="periodLabel">Période</span>
+        <div class="seg" id="period" role="group" aria-labelledby="periodLabel"></div>
+      </div>
+    </section>
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
+    <section class="kpis" id="kpis" aria-label="Indicateurs clés"></section>
+
+    <div class="grid">
+      <section class="panel" aria-labelledby="titlePs">
+        <div class="panel-header">
+          <div class="panel-title"><h2 id="titlePs">PS abonnés — évolution</h2></div>
+          <button class="expand-btn" data-chart="ps" title="Agrandir le graphique" aria-label="Agrandir le graphique PS abonnés">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3H3v4M13 3h4v4M7 17H3v-4M13 17h4v-4"/></svg>
+          </button>
+        </div>
+        <p class="hint">Parc de professionnels de santé abonnés sur la période</p>
+        <div class="chart-box"><canvas id="chPs" role="img" aria-label="Évolution des PS abonnés"></canvas><div class="chart-empty" id="emptyPs" hidden>Aucune donnée sur la période</div></div>
+      </section>
+
+      <section class="panel" aria-labelledby="titleLic">
+        <div class="panel-header">
+          <div class="panel-title"><h2 id="titleLic">Licences abonnées — évolution</h2></div>
+          <button class="expand-btn" data-chart="lic" title="Agrandir le graphique" aria-label="Agrandir le graphique Licences abonnées">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3H3v4M13 3h4v4M7 17H3v-4M13 17h4v-4"/></svg>
+          </button>
+        </div>
+        <p class="hint">Parc de licences abonnées sur la période</p>
+        <div class="chart-box"><canvas id="chLic" role="img" aria-label="Évolution des licences abonnées"></canvas><div class="chart-empty" id="emptyLic" hidden>Aucune donnée sur la période</div></div>
+      </section>
+
+      <section class="panel full" aria-labelledby="titleCompare">
+        <div class="panel-header">
+          <div class="panel-title"><h2 id="titleCompare">Comparaison N vs N-1</h2></div>
+          <div class="panel-tools">
+            <div class="metric-switch" id="compareMetric" role="group" aria-label="Métrique comparée">
+              <button type="button" data-metric="ps" class="active" aria-pressed="true">PS abonnés</button>
+              <button type="button" data-metric="lic" aria-pressed="false">Licences abonnées</button>
+            </div>
+            <button class="expand-btn" data-chart="compare" title="Agrandir le graphique" aria-label="Agrandir le graphique Comparaison N vs N-1">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3H3v4M13 3h4v4M7 17H3v-4M13 17h4v-4"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="hint">52 dernières semaines comparées aux 52 semaines précédentes</p>
+        <p class="range" id="compareRange"></p>
+        <div class="chart-box compare"><canvas id="chCompare" role="img" aria-label="Comparaison des 52 dernières semaines avec les 52 semaines précédentes"></canvas><div class="chart-empty" id="emptyCompare" hidden>Aucune donnée sur ces 104 semaines</div></div>
+      </section>
+
+      <section class="panel full" aria-labelledby="titleBreak">
+        <div class="panel-header">
+          <div class="panel-title"><h2 id="titleBreak">PS abonnés &amp; Licences abonnées — par profession</h2></div>
+          <button class="expand-btn" data-chart="break" title="Agrandir le graphique" aria-label="Agrandir le graphique de répartition par profession">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3H3v4M13 3h4v4M7 17H3v-4M13 17h4v-4"/></svg>
+          </button>
+        </div>
+        <p class="hint">Répartition du parc abonné entre les 5 professions au dernier point</p>
+        <div class="chart-box tall"><canvas id="chBreak" role="img" aria-label="Répartition des PS et licences abonnés par profession"></canvas><div class="chart-empty" id="emptyBreak" hidden>Aucune donnée au dernier point</div></div>
+      </section>
+    </div>
+    <footer>Source : fichier interne « Publimaj Licences et PS abonnés » · Données hebdomadaires (médiane par semaine)<br><a href="upload">Mettre à jour les données</a></footer>
+  </template>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalHint">
     <div class="modal-header">
-      <h3 id="modalTitle"></h3>
-      <button class="modal-close" id="modalClose">✕</button>
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" id="modalClose" aria-label="Fermer l’agrandissement">×</button>
     </div>
     <p class="hint" id="modalHint"></p>
-    <div class="modal-chart-box"><canvas id="chModal"></canvas></div>
+    <div class="modal-chart-box"><canvas id="chModal" role="img" aria-label="Graphique agrandi"></canvas></div>
   </div>
 </div>
 
-<header class="top"><div class="top-inner">
-<div><h1>Suivi clientèle — Abonnés</h1>
-<p class="sub">Parc des <b>PS abonnés</b> et <b>Licences abonnées</b> par profession. Tableau de pilotage (COPIL).</p></div>
-<div class="badge">Dernière donnée<b id="lastDate">—</b></div>
-</div></header>
-<div class="wrap">
-<div id="app" class="state">Chargement des données…</div>
-<template id="tpl">
-<div class="controls">
-  <div class="filter" id="filter"></div>
-  <div class="seg" id="period"><span class="lbl">Période</span></div>
-</div>
-<div class="kpis" id="kpis"></div>
-<div class="grid">
-  <div class="panel">
-    <div class="panel-header"><h3>PS abonnés — évolution</h3><button class="expand-btn" data-chart="ps" title="Agrandir">⤢</button></div>
-    <p class="hint">Nombre de professionnels de santé abonnés sur la période</p>
-    <div class="chart-box"><canvas id="chPs"></canvas></div>
-  </div>
-  <div class="panel">
-    <div class="panel-header"><h3>Licences abonnées — évolution</h3><button class="expand-btn" data-chart="lic" title="Agrandir">⤢</button></div>
-    <p class="hint">Nombre de licences abonnées sur la période</p>
-    <div class="chart-box"><canvas id="chLic"></canvas></div>
-  </div>
-  <div class="panel full">
-    <div class="panel-header"><h3>PS abonnés &amp; Licences abonnées — par profession (dernier point)</h3><button class="expand-btn" data-chart="break" title="Agrandir">⤢</button></div>
-    <p class="hint">Répartition du parc abonné entre les 5 professions</p>
-    <div class="chart-box tall"><canvas id="chBreak"></canvas></div>
-  </div>
-</div>
-<footer>Source : fichier interne « Publimaj Licences et PS abonnés ». Données hebdomadaires (médiane par semaine). · <a href="upload">Mettre à jour les données</a></footer>
-</template>
-</div>
 <script>
-const PROFS=['Total','Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
-const PERIODS=[['3 mois',92],['6 mois',184],['12 mois',366],['2 ans',730],['3 ans',1095],['5 ans',1825],['Tout',null]];
+'use strict';
 
-function frDate(iso){const[y,m,d]=iso.split('-');const mn=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];return +d+' '+mn[+m-1]+' '+y;}
-function frShort(iso){const[y,m]=iso.split('-');const mn=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];return mn[+m-1]+" '"+y.slice(2);}
-function fmt(n){return n==null?'—':Math.round(n).toLocaleString('fr-FR');}
+const PROFS=['Total','Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
+const PROF5=PROFS.slice(1);
+const PERIODS=[['3 mois',92],['6 mois',184],['12 mois',366],['2 ans',730],['3 ans',1095],['5 ans',1825],['Tout',null]];
+const MONTHS_LONG=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const MONTHS_SHORT=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+
+function frDate(iso){
+  if(!iso||!/^\d{4}-\d{2}-\d{2}$/.test(iso))return '—';
+  const [y,m,d]=iso.split('-');
+  return `${Number(d)} ${MONTHS_LONG[Number(m)-1]} ${y}`;
+}
+function frShort(iso){
+  if(!iso||!/^\d{4}-\d{2}-\d{2}$/.test(iso))return '';
+  const [y,m]=iso.split('-');
+  return `${MONTHS_SHORT[Number(m)-1]} '${y.slice(2)}`;
+}
+function fmt(n){return n==null||!Number.isFinite(n)?'—':Math.round(n).toLocaleString('fr-FR');}
+function isNum(n){return n!=null&&Number.isFinite(n);}
+function fmtPct(n){return Math.abs(n).toLocaleString('fr-FR',{maximumFractionDigits:1});}
+function latest(series){
+  for(let i=series.length-1;i>=0;i--)if(isNum(series[i]))return {value:series[i],index:i};
+  return null;
+}
+function evolution(series){
+  const points=series.map((value,index)=>({value,index})).filter(p=>isNum(p.value));
+  if(points.length<2||points[0].value===0)return null;
+  return (points[points.length-1].value-points[0].value)/Math.abs(points[0].value)*100;
+}
+function hasData(series){return Array.isArray(series)&&series.some(isNum);}
+function metric(series,length){return Array.from({length},(_,i)=>Array.isArray(series)&&isNum(series[i])?series[i]:null);}
 
 function boot(DATA){
-  let curProf='Total', curDays=366;
-  const ALL=DATA['Total'].labels;
+  let curProf='Total',curDays=366,compareMetric='ps';
+  const ALL=Array.isArray(DATA.Total.labels)?DATA.Total.labels:[];
+  if(!ALL.length)throw new Error('Aucune date disponible');
   const lastD=ALL[ALL.length-1];
-  document.getElementById('app').replaceWith(document.getElementById('tpl').content.cloneNode(true));
+  const lastIndex=ALL.length-1;
+  const app=document.getElementById('app');
+  app.className='';
+  app.removeAttribute('role');
+  app.removeAttribute('aria-live');
+  app.replaceChildren(document.getElementById('tpl').content.cloneNode(true));
   document.getElementById('lastDate').textContent=frDate(lastD);
 
-  function startIdx(days){if(!days)return 0;const last=new Date(lastD);const lim=new Date(last);lim.setDate(lim.getDate()-days);
-    for(let i=0;i<ALL.length;i++){if(new Date(ALL[i])>=lim)return i;}return 0;}
-  function win(){const s=DATA[curProf];const i0=startIdx(curDays);
-    const sl=a=>a.slice(i0);const labels=sl(ALL);
-    const ps=sl(s.ps_ab_base),lic=sl(s.lic_ab_base);
-    return {labels,ps,lic,i0};}
+  function startIdx(days){
+    if(!days)return 0;
+    const last=new Date(`${lastD}T00:00:00Z`);
+    const limit=new Date(last);
+    limit.setUTCDate(limit.getUTCDate()-days);
+    for(let i=0;i<ALL.length;i++)if(new Date(`${ALL[i]}T00:00:00Z`)>=limit)return i;
+    return 0;
+  }
+  function currentSeries(key){return DATA[curProf]&&Array.isArray(DATA[curProf][key])?DATA[curProf][key]:[];}
+  function win(){
+    const i0=startIdx(curDays),length=ALL.length-i0;
+    return {
+      labels:ALL.slice(i0),i0,
+      ps:metric(currentSeries('ps_ab_base'),ALL.length).slice(i0),
+      lic:metric(currentSeries('lic_ab_base'),ALL.length).slice(i0),
+      psNaAct:metric(currentSeries('ps_na_act'),ALL.length).slice(i0),
+      licNaAct:metric(currentSeries('lic_na_act'),ALL.length).slice(i0),
+      length
+    };
+  }
 
-  Chart.defaults.font.family='-apple-system,Segoe UI,Roboto,sans-serif';Chart.defaults.color='#6b7689';
-  const gridY={color:'#eef1f6'},gridX={display:false};
-  function xticks(labels,limit){return{maxRotation:0,autoSkip:true,maxTicksLimit:limit||8,font:{size:11},color:'#6b7689',
-    callback:function(v){const l=labels[v]||this.getLabelForValue(v);return l?frShort(l):'';}};}
-  function legend(){return{position:'top',align:'end',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'rectRounded',padding:13,font:{size:12,weight:'600'},color:'#1f2a44'}};}
-  function tip(){return{callbacks:{title:i=>frDate(i[0].label),label:c=>c.dataset.label+' : '+fmt(c.parsed.y)}};}
-
-  let ch={};
-  function lineChart(id,ds){return new Chart(document.getElementById(id),{type:'line',data:{labels:[],datasets:ds},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:ds.length>1?legend():{display:false},tooltip:tip()},
-    scales:{x:{ticks:{},grid:gridX},y:{beginAtZero:false,grid:gridY,ticks:{callback:v=>fmt(v)}}}}});}
-
-  ch.ps=lineChart('chPs',[{label:'PS abonnés',data:[],borderColor:'#1f9d8f',backgroundColor:'#1f9d8f26',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}]);
-  ch.lic=lineChart('chLic',[{label:'Licences abonnées',data:[],borderColor:'#2f5aa8',backgroundColor:'#2f5aa81f',fill:true,borderWidth:2.5,pointRadius:0,tension:.2}]);
-
-  const PROF5=['Infirmier','Kiné','Orthophoniste','Orthoptiste','Pédicure-Podologue'];
-  ch.break=new Chart(document.getElementById('chBreak'),{type:'bar',
-    data:{labels:PROF5,datasets:[
-      {label:'PS abonnés',data:[],backgroundColor:'#1f9d8f',yAxisID:'y',order:2},
-      {label:'Licences abonnées',data:[],backgroundColor:'#2f5aa8',yAxisID:'y',order:2}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:legend(),tooltip:{callbacks:{label:c=>c.dataset.label+' : '+fmt(c.parsed.y)}}},
-      scales:{x:{grid:gridX,ticks:{font:{size:12,weight:'600'},color:'#1f2a44'}},
-      y:{grid:gridY,ticks:{callback:v=>fmt(v)}}}}});
-
-  // --- Modale plein écran ---
-  let chModal=null;
-  const overlay=document.getElementById('modalOverlay');
-  const modalTitle=document.getElementById('modalTitle');
-  const modalHint=document.getElementById('modalHint');
-
-  const CHART_META={
-    ps:{title:'PS abonnés — évolution',hint:'Nombre de professionnels de santé abonnés sur la période'},
-    lic:{title:'Licences abonnées — évolution',hint:'Nombre de licences abonnées sur la période'},
-    break:{title:'PS abonnés & Licences abonnées — par profession (dernier point)',hint:'Répartition du parc abonné entre les 5 professions'}
+  Chart.defaults.font.family='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  Chart.defaults.color='#6b7689';
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const gridY={color:'#e9edf3',drawTicks:false},gridX={display:false};
+  function xticks(labels,limit=8){
+    return {maxRotation:0,autoSkip:true,maxTicksLimit:limit,font:{size:11},color:'#6b7689',padding:8,
+      callback:function(v){const label=labels[v]||this.getLabelForValue(v);return label?frShort(label):'';}};
+  }
+  function legend(){return {position:'top',align:'end',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',padding:16,font:{size:11.5,weight:'600'},color:'#1f2a44'}};}
+  function tooltip(){return {backgroundColor:'#16294d',titleColor:'#fff',bodyColor:'#fff',padding:11,cornerRadius:8,displayColors:true,boxPadding:4,
+    callbacks:{title:items=>items.length?frDate(items[0].label):'',label:c=>`${c.dataset.label} : ${fmt(c.parsed.y)}`}};}
+  function baseOptions(multi=false){return {
+    responsive:true,maintainAspectRatio:false,animation:reduceMotion?false:{duration:250},
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:multi?legend():{display:false},tooltip:tooltip()},
+    scales:{x:{ticks:{},grid:gridX,border:{display:false}},y:{beginAtZero:false,grace:'5%',grid:gridY,border:{display:false},ticks:{padding:8,callback:v=>fmt(v)}}}
+  };}
+  function lineChart(id,datasets,multi=false){
+    return new Chart(document.getElementById(id),{type:'line',data:{labels:[],datasets},options:baseOptions(multi)});
+  }
+  const trendDataset=(label,color,background)=>({label,data:[],borderColor:color,backgroundColor:background,fill:true,borderWidth:2.25,pointRadius:0,pointHoverRadius:4,pointHitRadius:10,tension:.22,spanGaps:false});
+  const ch={};
+  ch.ps=lineChart('chPs',[trendDataset('PS abonnés','#1f9d8f','rgba(31,157,143,.10)')]);
+  ch.lic=lineChart('chLic',[trendDataset('Licences abonnées','#2f5aa8','rgba(47,90,168,.09)')]);
+  ch.compare=lineChart('chCompare',[
+    {label:'Année N',data:[],borderColor:'#1f9d8f',backgroundColor:'#1f9d8f',borderWidth:2.5,pointRadius:0,pointHoverRadius:4,pointHitRadius:10,tension:.2,spanGaps:false},
+    {label:'Année N-1',data:[],borderColor:'#8a99b1',backgroundColor:'#8a99b1',borderWidth:2,borderDash:[6,5],pointRadius:0,pointHoverRadius:4,pointHitRadius:10,tension:.2,spanGaps:false}
+  ],true);
+  ch.compare.options.plugins.tooltip.callbacks.title=items=>{
+    if(!items.length)return '';
+    const i=items[0].dataIndex,c=comparison.labels[i],p=comparison.previousLabels[i];
+    return `Semaine ${i+1} · N : ${frDate(c)} · N-1 : ${frDate(p)}`;
   };
-
-  function openModal(key){
-    const src=ch[key];
-    modalTitle.textContent=CHART_META[key].title;
-    modalHint.textContent=CHART_META[key].hint;
-    if(chModal){chModal.destroy();chModal=null;}
-    chModal=new Chart(document.getElementById('chModal'),{
-      type:src.config.type,
-      data:JSON.parse(JSON.stringify(src.data)),
-      options:{...JSON.parse(JSON.stringify(src.options)),responsive:true,maintainAspectRatio:false,
-        scales:{...JSON.parse(JSON.stringify(src.options.scales||{}))}}
-    });
-    overlay.classList.add('open');
-    document.body.style.overflow='hidden';
-  }
-
-  function closeModal(){
-    overlay.classList.remove('open');
-    document.body.style.overflow='';
-    if(chModal){chModal.destroy();chModal=null;}
-  }
-
-  document.getElementById('modalClose').onclick=closeModal;
-  overlay.onclick=e=>{if(e.target===overlay)closeModal();};
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-
-  document.addEventListener('click',e=>{
-    const btn=e.target.closest('.expand-btn');
-    if(btn)openModal(btn.dataset.chart);
+  ch.break=new Chart(document.getElementById('chBreak'),{
+    type:'bar',
+    data:{labels:PROF5,datasets:[
+      {label:'PS abonnés',data:[],backgroundColor:'#1f9d8f',borderRadius:5,maxBarThickness:42},
+      {label:'Licences abonnées',data:[],backgroundColor:'#2f5aa8',borderRadius:5,maxBarThickness:42}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:reduceMotion?false:{duration:250},
+      plugins:{legend:legend(),tooltip:tooltip()},
+      scales:{x:{grid:gridX,border:{display:false},ticks:{font:{size:11.5,weight:'600'},color:'#1f2a44',maxRotation:0,autoSkip:false,
+        callback:function(v){const label=this.getLabelForValue(v);return label==='Pédicure-Podologue'?['Pédicure-','Podologue']:label;}}},
+        y:{beginAtZero:true,grace:'5%',grid:gridY,border:{display:false},ticks:{padding:8,callback:v=>fmt(v)}}}}
   });
+  ch.break.options.plugins.tooltip.callbacks.title=items=>items.length?items[0].label:'';
 
-  function kc(label,val,delta,star){
-    let d='';
-    if(delta!=null){const pos=delta>=0;const cls=pos?'pos':'neg';const ar=pos?'▲ ':'▼ ';
-      d=`<div class="delta ${cls}">${ar}${Math.abs(delta).toFixed(0)}% <span>sur la période</span></div>`;}
-    return `<div class="kpi${star?' star':''}"><div class="label">${label}</div><div class="val">${val}</div>${d}</div>`;}
+  let comparison={labels:[],previousLabels:[],current:[],previous:[]};
+  function updateComparison(){
+    const count=Math.min(52,ALL.length),nStart=ALL.length-count;
+    const key=compareMetric==='ps'?'ps_ab_base':'lic_ab_base';
+    const series=metric(currentSeries(key),ALL.length);
+    comparison={
+      labels:ALL.slice(nStart),
+      previousLabels:Array.from({length:count},(_,i)=>nStart-count+i>=0?ALL[nStart-count+i]:null),
+      current:series.slice(nStart),
+      previous:Array.from({length:count},(_,i)=>nStart-count+i>=0?series[nStart-count+i]:null)
+    };
+    const color=compareMetric==='ps'?'#1f9d8f':'#2f5aa8';
+    ch.compare.data.labels=comparison.labels;
+    ch.compare.data.datasets[0].data=comparison.current;
+    ch.compare.data.datasets[1].data=comparison.previous;
+    ch.compare.data.datasets[0].borderColor=color;
+    ch.compare.data.datasets[0].backgroundColor=color;
+    ch.compare.data.datasets[0].label=compareMetric==='ps'?'PS abonnés — N':'Licences abonnées — N';
+    ch.compare.data.datasets[1].label=compareMetric==='ps'?'PS abonnés — N-1':'Licences abonnées — N-1';
+    ch.compare.options.scales.x.ticks=xticks(comparison.labels,10);
+    ch.compare.update();
+    document.getElementById('emptyCompare').hidden=hasData(comparison.current)||hasData(comparison.previous);
+    const nRange=`N : ${frDate(comparison.labels[0])} – ${frDate(comparison.labels[comparison.labels.length-1])}`;
+    const pRange=`N-1 : ${frDate(comparison.previousLabels[0])} – ${frDate(comparison.previousLabels[comparison.previousLabels.length-1])}`;
+    document.getElementById('compareRange').textContent=`${nRange}  ·  ${pRange}`;
+  }
 
-  function render(){
-    const w=win();const n=w.labels.length-1;
-    const E=ALL.length-1;
-    const chg=(a)=>a[0]?((a[n]-a[0])/a[0]*100):null;
+  function deltaMarkup(delta){
+    if(delta==null)return '<div class="delta neutral">Évolution indisponible</div>';
+    const cls=delta>0?'pos':delta<0?'neg':'neutral';
+    const arrow=delta>0?'▲':delta<0?'▼':'→';
+    return `<div class="delta ${cls}">${arrow} ${fmtPct(delta)} % <span>sur la période</span></div>`;
+  }
+  function kpi({label,value,delta=null,tone='',secondary='',neutral=''}){
+    return `<article class="kpi ${tone}"><div class="label">${label}</div><div class="val">${value}</div>${neutral?`<div class="delta neutral">${neutral}</div>`:deltaMarkup(delta)}${secondary?`<div class="secondary">${secondary}</div>`:''}</article>`;
+  }
+  function ratioPoint(w){
+    for(let i=w.labels.length-1;i>=0;i--)if(isNum(w.ps[i])&&isNum(w.lic[i])&&w.lic[i]!==0)return w.ps[i]/w.lic[i];
+    return null;
+  }
+  function renderKpis(w){
+    const ps=latest(w.ps),lic=latest(w.lic),na=latest(w.psNaAct),licNa=latest(w.licNaAct),ratio=ratioPoint(w);
     document.getElementById('kpis').innerHTML=[
-      kc('PS abonnés',fmt(w.ps[n]),chg(w.ps),true),
-      kc('Licences abonnées',fmt(w.lic[n]),chg(w.lic),false),
-      kc('PS par licence',w.lic[n]?(w.ps[n]/w.lic[n]).toFixed(2).replace('.',','):' —',null,false),
+      kpi({label:'PS abonnés',value:fmt(ps&&ps.value),delta:evolution(w.ps),tone:'teal'}),
+      kpi({label:'Licences abonnées',value:fmt(lic&&lic.value),delta:evolution(w.lic)}),
+      kpi({label:'PS par licence',value:ratio==null?'—':ratio.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}),tone:'navy',neutral:'Dernier point disponible'}),
+      kpi({label:'Non-abonnés actifs',value:fmt(na&&na.value),delta:evolution(w.psNaAct),tone:'slate',secondary:`Licences non abonnées actives : <b>${fmt(licNa&&licNa.value)}</b>`})
     ].join('');
-    const setx=c=>{c.options.scales.x.ticks=xticks(w.labels);};
-    ch.ps.data.labels=w.labels;ch.ps.data.datasets[0].data=w.ps;setx(ch.ps);ch.ps.update();
-    ch.lic.data.labels=w.labels;ch.lic.data.datasets[0].data=w.lic;setx(ch.lic);ch.lic.update();
-    ch.break.data.datasets[0].data=PROF5.map(p=>{const d=DATA[p];return d?d.ps_ab_base[E]:null;});
-    ch.break.data.datasets[1].data=PROF5.map(p=>{const d=DATA[p];return d?d.lic_ab_base[E]:null;});
+  }
+  function updateLine(chart,w,key,emptyId){
+    chart.data.labels=w.labels;
+    chart.data.datasets[0].data=w[key];
+    chart.options.scales.x.ticks=xticks(w.labels);
+    chart.update();
+    document.getElementById(emptyId).hidden=hasData(w[key]);
+  }
+  function updateBreak(){
+    const ps=PROF5.map(p=>DATA[p]&&isNum(DATA[p].ps_ab_base&&DATA[p].ps_ab_base[lastIndex])?DATA[p].ps_ab_base[lastIndex]:null);
+    const lic=PROF5.map(p=>DATA[p]&&isNum(DATA[p].lic_ab_base&&DATA[p].lic_ab_base[lastIndex])?DATA[p].lic_ab_base[lastIndex]:null);
+    ch.break.data.datasets[0].data=ps;
+    ch.break.data.datasets[1].data=lic;
     ch.break.update();
+    document.getElementById('emptyBreak').hidden=hasData(ps)||hasData(lic);
+  }
+  function render(){
+    const w=win();
+    renderKpis(w);
+    updateLine(ch.ps,w,'ps','emptyPs');
+    updateLine(ch.lic,w,'lic','emptyLic');
+    updateComparison();
+    updateBreak();
   }
 
   const fc=document.getElementById('filter');
-  PROFS.forEach(p=>{const b=document.createElement('button');b.textContent=(p==='Total'?'Synthèse':p);if(p===curProf)b.classList.add('active');
-    b.onclick=()=>{curProf=p;[...fc.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');render();};fc.appendChild(b);});
+  PROFS.forEach(p=>{
+    const b=document.createElement('button');
+    b.type='button';b.textContent=p==='Total'?'Synthèse':p;b.dataset.prof=p;b.setAttribute('aria-pressed',String(p===curProf));
+    if(p===curProf)b.classList.add('active');
+    b.onclick=()=>{curProf=p;[...fc.children].forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active));});render();};
+    fc.appendChild(b);
+  });
   const pc=document.getElementById('period');
-  PERIODS.forEach(([lbl,days])=>{const b=document.createElement('button');b.textContent=lbl;if(days===curDays)b.classList.add('active');
-    b.onclick=()=>{curDays=days;[...pc.querySelectorAll('button')].forEach(x=>x.classList.remove('active'));b.classList.add('active');render();};pc.appendChild(b);});
+  PERIODS.forEach(([label,days])=>{
+    const b=document.createElement('button');
+    b.type='button';b.textContent=label;b.dataset.days=days==null?'all':String(days);b.setAttribute('aria-pressed',String(days===curDays));
+    if(days===curDays)b.classList.add('active');
+    b.onclick=()=>{curDays=days;[...pc.children].forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active));});render();};
+    pc.appendChild(b);
+  });
+  document.getElementById('compareMetric').addEventListener('click',event=>{
+    const button=event.target.closest('button[data-metric]');
+    if(!button||button.dataset.metric===compareMetric)return;
+    compareMetric=button.dataset.metric;
+    document.querySelectorAll('#compareMetric button').forEach(b=>{const active=b===button;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+    updateComparison();
+  });
+
+  const overlay=document.getElementById('modalOverlay');
+  const modalTitle=document.getElementById('modalTitle');
+  const modalHint=document.getElementById('modalHint');
+  const modalClose=document.getElementById('modalClose');
+  let chModal=null,lastFocused=null;
+  const CHART_META={
+    ps:{title:'PS abonnés — évolution',hint:'Parc de professionnels de santé abonnés sur la période'},
+    lic:{title:'Licences abonnées — évolution',hint:'Parc de licences abonnées sur la période'},
+    compare:{title:'Comparaison N vs N-1',hint:'52 dernières semaines comparées aux 52 semaines précédentes'},
+    break:{title:'PS abonnés & Licences abonnées — par profession',hint:'Répartition du parc abonné entre les 5 professions au dernier point'}
+  };
+  function openModal(key){
+    const src=ch[key],meta=CHART_META[key];
+    if(!src||!meta)return;
+    lastFocused=document.activeElement;
+    modalTitle.textContent=meta.title;
+    modalHint.textContent=key==='compare'?`${meta.hint} · ${document.getElementById('compareRange').textContent}`:meta.hint;
+    if(chModal){chModal.destroy();chModal=null;}
+    const copy=value=>{
+      if(Array.isArray(value))return value.map(copy);
+      if(value&&Object.prototype.toString.call(value)==='[object Object]')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,copy(v)]));
+      return value;
+    };
+    chModal=new Chart(document.getElementById('chModal'),{
+      type:src.config.type,
+      data:copy(src.config.data),
+      options:{...copy(src.config.options),responsive:true,maintainAspectRatio:false,animation:reduceMotion?false:{duration:200}}
+    });
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    modalClose.focus();
+  }
+  function closeModal(){
+    if(!overlay.classList.contains('open'))return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    if(chModal){chModal.destroy();chModal=null;}
+    if(lastFocused&&lastFocused.isConnected)lastFocused.focus();
+  }
+  modalClose.addEventListener('click',closeModal);
+  overlay.addEventListener('click',event=>{if(event.target===overlay)closeModal();});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape')closeModal();
+    if(event.key==='Tab'&&overlay.classList.contains('open')){event.preventDefault();modalClose.focus();}
+  });
+  document.getElementById('app').addEventListener('click',event=>{
+    const button=event.target.closest('.expand-btn');
+    if(button)openModal(button.dataset.chart);
+  });
+
   render();
 }
 
-fetch('api/data').then(r=>r.json()).then(j=>boot(j.data)).catch(e=>{
-  document.getElementById('app').innerHTML='Erreur de chargement des données : '+e;
-});
-</script></body></html>
+fetch('api/data')
+  .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json();})
+  .then(payload=>{
+    if(!payload||!payload.data||!payload.data.Total)throw new Error('Format de données inattendu');
+    boot(payload.data);
+  })
+  .catch(error=>{
+    const app=document.getElementById('app');
+    app.className='state error';
+    app.textContent=`Erreur de chargement des données : ${error.message}`;
+  });
+</script>
+</body>
+</html>
