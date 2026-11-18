@@ -28,7 +28,11 @@ PROFS = ["Infirmier", "Kiné", "Orthophoniste", "Orthoptiste", "Pédicure-Podolo
 
 # Bornes : on ignore les dates aberrantes (< 2015) et les colonnes futures vides
 LOWER = datetime.datetime(2015, 1, 1)
-CUTOFF = datetime.datetime(2026, 5, 25)  # ajuster si le fichier va plus loin
+# Borne haute large : les colonnes futures vides sont deja ignorees plus bas
+# (une semaine sans aucune valeur "Ps - Abonnes" n'est pas emise). Une date
+# fixe trop proche (ex. 2026-05-25) ignorait silencieusement toutes les
+# donnees plus recentes de l'Excel, d'ou << rien ne change >> apres upload.
+CUTOFF = datetime.datetime(2030, 1, 1)
 
 METRICS = [
     "ps_ab_base", "ps_na_base", "lic_ab_base", "lic_na_base",
