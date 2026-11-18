@@ -68,6 +68,12 @@ def login_required(f):
 # Cache mémoire : {hash: data}
 _cache = {}
 
+# Version du format de cache : a incrementer quand la logique de parsing
+# change (ex. CUTOFF avancee), pour invalider les caches disque generes
+# avec l'ancienne logique (sinon un cache.json encore valide en MD5 mais
+# parse avec l'ancien CUTOFF serait resservi tel quel).
+CACHE_VERSION = "2"
+
 
 def active_xlsx():
     """Excel uploadé (volume) en priorité, sinon le fichier livré avec le projet."""
@@ -96,7 +102,7 @@ def cache_read_paths():
 def get_data():
     """Renvoie les données extraites, avec cache par empreinte du fichier."""
     path = active_xlsx()
-    digest = file_hash(path)
+    digest = f"{CACHE_VERSION}:{file_hash(path)}"
 
     if digest in _cache:
         return _cache[digest]
