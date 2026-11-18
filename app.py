@@ -222,6 +222,13 @@ def api_indicateurs():
         v = serie[-1]
         return int(v) if v is not None else None
 
+    def avant_dernier(metrique):
+        serie = total.get(metrique, [])
+        if len(serie) < 2:
+            return None
+        v = serie[-2]
+        return int(v) if v is not None else None
+
     return jsonify({
         "semaine": labels[-1] if labels else None,
         # Parc abonnes (dernier releve)
@@ -230,6 +237,8 @@ def api_indicateurs():
         # Activite reelle sur 30 jours glissants (abonnes)
         "actifs_ps_30j": dernier("ps_ab_act"),
         "actifs_licences_30j": dernier("lic_ab_act"),
+        # Compte de la semaine precedente (pour la tendance)
+        "abonnes_licences_semaine_prec": avant_dernier("lic_ab_base"),
     })
 
 
